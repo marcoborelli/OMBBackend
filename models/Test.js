@@ -3,7 +3,12 @@ const mongoose = require('mongoose');
 const testSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }, //auto-generated
   valve_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Valve', required: true },
-  data: [{ type: mongoose.Schema.Types.ObjectId, ref: 'TestData' }]
+  data: [{
+    _id: false, //no id is required for each element of the array
+    pair: { type: Number, required: true },
+    angle: { type: Number, required: true},
+    delta_time: { type: Number, required: true}
+  }]
 }, {
   versionKey: false
 });
