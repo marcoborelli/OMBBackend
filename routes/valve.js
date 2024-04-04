@@ -1,4 +1,5 @@
 const express = require('express')
+const mongoose = require("mongoose")
 const router = express.Router()
 const Valve = require('../models/Valve.js')
 
@@ -15,6 +16,10 @@ router.get("/all", async (req, res) => {
 
 router.get("/get/:valveID", async (req, res) => {
     const valveId = req.params.valveID
+
+    if (!mongoose.Types.ObjectId.isValid(valveId)) {
+        return res.status(400).send("ValveID is not valid")
+    }
 
     try {
         const data = await Valve.findById(valveId).populate('tests')
@@ -52,6 +57,9 @@ router.put('/edit/:valveID', async (req, res) => {
     const valveId = req.params.valveID
     const { name, model_family, tests } = req.body
 
+    if (!mongoose.Types.ObjectId.isValid(valveId)) {
+        return res.status(400).send("ValveID is not valid")
+    }
 
     try {
         const updatedValve = await Valve.findByIdAndUpdate(valveId, { name, model_family, $push: {tests} }, { new: true })
@@ -70,6 +78,10 @@ router.put('/edit/:valveID', async (req, res) => {
 
 router.delete('/del/:valveID', async (req, res) => {
     const valveId = req.params.valveID
+
+    if (!mongoose.Types.ObjectId.isValid(valveId)) {
+        return res.status(400).send("ValveID is not valid")
+    }
 
     try {
         const deletedValve = await Valve.findByIdAndDelete(valveId, { new: true })
