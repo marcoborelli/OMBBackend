@@ -50,10 +50,11 @@ router.post("/add", async (req, res) => {
 
 router.put('/edit/:valveID', async (req, res) => {
     const valveId = req.params.valveID
-    const newData = req.body
+    const { name, model_family, tests } = req.body
+
 
     try {
-        const updatedValve = await Valve.findByIdAndUpdate(valveId, newData, { new: true })
+        const updatedValve = await Valve.findByIdAndUpdate(valveId, { name, model_family, $push: {tests} }, { new: true })
 
         if (!updatedValve) {
             return res.status(404).json({ error: 'Valve not found' })
