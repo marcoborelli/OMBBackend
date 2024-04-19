@@ -12,6 +12,22 @@ router.get("/all", async (req, res) => {
     }
 })
 
+router.get("/all/:valveID", async (req, res) => {
+    const valveId = req.params.valveID
+
+    try {
+        const data = await ValveInstance.find({ valve_model: valveId })
+
+        if (!data) {
+            return res.status(404).json({ error: 'Valve not found' })
+        }
+
+        res.status(200).json(data)
+    } catch (error) {
+        res.status(500).json({ error: 'Error retrieving valve instances.' })
+    }
+})
+
 
 router.get("/get/:valveInstanceSN", async (req, res) => {
     const valveId = req.params.valveInstanceSN
