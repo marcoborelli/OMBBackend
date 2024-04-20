@@ -38,21 +38,21 @@ router.get("/get/:testID", async (req, res) => {
 
 router.post("/add", async (req, res) => {
     try {
-        const { valve_id, data } = req.body
+        const { instance_id, data } = req.body
 
         try {
-            await axios.get(`api/instances/get/${valve_id}`)
+            await axios.get(`api/instances/get/${instance_id}`)
         } catch {
             return res.status(400).json({ message: "Not valid valve" })
         }
 
         const newTest = new Test({
-            valve_id,
+            instance_id,
             data,
         })
 
         await newTest.save()
-        await axios.put(`api/instances/edit/${valve_id}`, { tests: [newTest._id] })
+        await axios.put(`api/instances/edit/${instance_id}`, { tests: [newTest._id] })
         res.status(200).json(newTest)
     } catch (error) {
         console.error('Error saving valve to the database:', error)
