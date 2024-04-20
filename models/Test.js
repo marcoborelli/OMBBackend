@@ -7,7 +7,6 @@ const testSchema = new mongoose.Schema({
     _id: false, //no id is required for each element of the array
     pair: { type: Number, required: true },
     angle: { type: Number, required: true },
-    delta_time: { type: Number, required: true }
   }]
 }, {
   versionKey: false
