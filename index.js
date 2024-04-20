@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const express = require("express")
 const axios = require('axios');
+const cors = require('cors');
 require('dotenv').config()
 
 const valveInstanceRoutes = require('./routes/valveInstance')
@@ -17,6 +18,11 @@ axios.defaults.baseURL = `http://localhost:${port}`
 app.listen(port, () => {
     console.log(`Server running on port ${port}`)
 })
+
+const corsOptions = {
+    origin: '*',
+};
+app.use(cors(corsOptions));
 
 
 app.use(express.json()) // Middleware to parse JSON in request body
