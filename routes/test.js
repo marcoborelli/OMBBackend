@@ -18,8 +18,8 @@ router.get("/all", async (req, res) => {
 router.get("/get/:testID", async (req, res) => {
     const testId = req.params.testID
 
-    if (!mongoose.Types.ObjectId.isValid(valveId)) {
-        return res.status(400).send("ValveID is not valid")
+    if (!mongoose.Types.ObjectId.isValid(testId)) {
+        return res.status(400).send("TestID is not valid")
     }
 
     try {
@@ -41,7 +41,7 @@ router.post("/add", async (req, res) => {
         const { valve_id, data } = req.body
 
         try {
-            await axios.get(`api/valves/get/${valve_id}`)
+            await axios.get(`api/instances/get/${valve_id}`)
         } catch {
             return res.status(400).json({ message: "Not valid valve" })
         }
@@ -52,10 +52,10 @@ router.post("/add", async (req, res) => {
         })
 
         await newTest.save()
-        await axios.put(`api/valves/edit/${valve_id}`, { tests: [newTest._id] })
+        await axios.put(`api/instances/edit/${valve_id}`, { tests: [newTest._id] })
         res.status(200).json(newTest)
     } catch (error) {
-        //console.error('Error saving valve to the database:', error)
+        console.error('Error saving valve to the database:', error)
         res.status(500).json({ error: 'Internal Server Error' })
     }
 })
