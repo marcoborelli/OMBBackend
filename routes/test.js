@@ -19,7 +19,7 @@ router.get("/get/:testID", async (req, res) => {
     const testId = req.params.testID
 
     if (!mongoose.Types.ObjectId.isValid(testId)) {
-        return res.status(400).send("TestID is not valid")
+        return res.status(404).send("TestID is not valid")
     }
 
     try {
