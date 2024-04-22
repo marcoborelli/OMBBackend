@@ -5,6 +5,7 @@ const valveModelSchema = new mongoose.Schema({
     description: { type: String, required: true, trim: true },
     gear_model: { type: String, required: true, trim: true },
     ma_gear: { type: Number, required: true },
+    img_url: { type: String }
 }, {
     versionKey: false
 });
