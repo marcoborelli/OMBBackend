@@ -34,13 +34,14 @@ router.get("/get/:valveID", async (req, res) => {
 
 router.post("/add", async (req, res) => {
     try {
-        const { _id, description, gear_model, ma_gear } = req.body
+        const { _id, description, gear_model, ma_gear, img_url } = req.body
 
         const newValve = new ValveModel({
             _id,
             description,
             gear_model,
-            ma_gear
+            ma_gear,
+            img_url
         })
 
         await newValve.save()
@@ -54,12 +55,12 @@ router.post("/add", async (req, res) => {
 
 router.put('/edit/:valveID', async (req, res) => {
     const valveId = req.params.valveID
-    const { description, gear_model, ma_gear } = req.body
+    const { description, gear_model, ma_gear, img_url } = req.body
 
     //TODO: mettere un controllo regex che id sia valido
 
     try {
-        const updatedValve = await ValveModel.findByIdAndUpdate(valveId, { description, gear_model, ma_gear }, { new: true })
+        const updatedValve = await ValveModel.findByIdAndUpdate(valveId, { description, gear_model, ma_gear, img_url }, { new: true })
 
         if (!updatedValve) {
             return res.status(404).json({ error: 'Valve model not found' })
