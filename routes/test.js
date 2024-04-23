@@ -4,6 +4,8 @@ const axios = require('axios');
 const router = express.Router()
 const Test = require('../models/Test.js')
 
+const test_for_page = 16
+
 
 router.get("/all", async (req, res) => {
     try {
@@ -14,6 +16,21 @@ router.get("/all", async (req, res) => {
     }
 })
 
+router.get("/getpage/:pageNumber", async (req, res) => { //le pagine partono da 1
+    const pageNumber = parseInt(req.params.pageNumber)
+    if (isNaN(pageNumber)) {
+        return res.status(400).json({ error: 'Invalid input.' })
+    }
+
+    const to_skip = test_for_page * (pageNumber - 1)
+
+    try {
+        const data = await Test.find().skip(to_skip).limit(test_for_page)/*.populate()*/
+        res.status(200).json(data)
+    } catch (error) {
+        res.status(500).json({ error: 'Error retrieving tests.' })
+    }
+})
 
 router.get("/get/:testID", async (req, res) => {
     const testId = req.params.testID
