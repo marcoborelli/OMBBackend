@@ -5,7 +5,7 @@ const ValveModel = require('../models/ValveModel.js')
 
 router.get("/all", async (req, res) => {
     try {
-        const data = await ValveModel.find()
+        const data = await ValveModel.find().populate('valve_family')
         res.status(200).json(data)
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving valve models.' })
@@ -19,7 +19,7 @@ router.get("/get/:valveID", async (req, res) => {
     //TODO: mettere un controllo regex che id sia valido
 
     try {
-        const data = await ValveModel.findById(valveId)
+        const data = await ValveModel.findById(valveId).populate('valve_family')
 
         if (!data) {
             return res.status(404).json({ error: 'Valve model not found' })
@@ -34,15 +34,20 @@ router.get("/get/:valveID", async (req, res) => {
 
 router.post("/add", async (req, res) => {
     try {
-        const { _id, description, gear_model, ma_gear, img_url } = req.body
+        const { _id, valve_family, description, gear_model, ma_gear, img_url } = req.body
 
         const newValve = new ValveModel({
             _id,
+            valve_family,
             description,
             gear_model,
             ma_gear,
             img_url
         })
+
+        if (!newValve._id.startsWith(valve_family)) {
+            return res.status(400).json({error: 'Data inconsistency between \'_id\' and \'valve_family\''})
+        }
 
         await newValve.save()
         res.status(200).json(newValve)
