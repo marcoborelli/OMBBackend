@@ -6,6 +6,7 @@ require('dotenv').config()
 
 const valveInstanceRoutes = require('./routes/valveInstance')
 const valveModelRoutes = require('./routes/valveModel')
+const valveFamilyRoutes = require('./routes/valveFamily')
 const testRoutes = require('./routes/test')
 
 const app = express()
@@ -29,4 +30,5 @@ app.use(express.json()) // Middleware to parse JSON in request body
 //app.use(express.urlencoded({ extended: true }));
 app.use('/api/instances', valveInstanceRoutes)
 app.use('/api/valves', valveModelRoutes)
+app.use('/api/families', valveFamilyRoutes)
 app.use('/api/tests', testRoutes)
