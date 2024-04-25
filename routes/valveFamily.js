@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const axios = require('axios')
 const ValveFamily = require('../models/ValveFamily.js')
 
 
@@ -30,16 +31,11 @@ router.get("/get/:valveFamilyID", async (req, res) => {
 
 router.post("/add", async (req, res) => {
     try {
-        const { _id, bto, runo, eto, btc, runc, etc, img_url } = req.body
+        const { _id, theoric_values, img_url } = req.body
 
         const newValveFamily = new ValveFamily({
             _id,
-            bto,
-            runo,
-            eto,
-            btc,
-            runc,
-            etc,
+            theoric_values,
             img_url
         })
 
@@ -53,12 +49,23 @@ router.post("/add", async (req, res) => {
 
 router.put('/edit/:valveFamilyID', async (req, res) => {
     const valveFamilyId = req.params.valveFamilyID
-    const { bto, runo, eto, btc, runc, etc, img_url } = req.body
+    const { theoric_values, img_url } = req.body
 
     //TODO: mettere un controllo regex che id sia valido
 
+    let values
     try {
-        const updatedValveFamily = await ValveFamily.findByIdAndUpdate(valveFamilyId, {  bto, runo, eto, btc, runc, etc, img_url }, { new: true })
+        values = (await axios.get(`api/families/get/${valveFamilyId}`)).data.theoric_values
+    } catch {
+        return res.status(404).json({ error: 'Valve family not found' })
+    }
+
+    for (const prop in theoric_values) { //aggiungo gli attributi che non sono stati modificati (verrebbero rimossi altrimenti)
+        values[prop] = theoric_values[prop]
+    }
+
+    try {
+        const updatedValveFamily = await ValveFamily.findByIdAndUpdate(valveFamilyId, { theoric_values: values, img_url }, { new: true })
 
         if (!updatedValveFamily) {
             return res.status(404).json({ error: 'Valve family not found' })
