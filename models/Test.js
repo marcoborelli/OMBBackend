@@ -5,6 +5,7 @@ const testSchema = new mongoose.Schema({
   instance_id: { type: String, ref: 'ValveInstance', required: true },
   data: [{
     _id: false, //no id is required for each element of the array
+    isOpening: { type: Boolean, required: true },
     pair: { type: Number, required: true },
     angle: { type: Number, required: true },
   }]
