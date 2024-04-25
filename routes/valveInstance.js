@@ -12,7 +12,7 @@ router.get("/all", async (req, res) => {
     }
 })
 
-router.get("/all/:valveID", async (req, res) => {
+router.get("/all/ofmodel/:valveID", async (req, res) => {
     const valveId = req.params.valveID
 
     try {
