@@ -29,6 +29,29 @@ router.get("/all/ofmodel/:valveID", async (req, res) => {
 })
 
 
+router.get("/all/offamily/:valveFamilyID", async (req, res) => {
+    const valveFamilyId = req.params.valveFamilyID
+
+    try {
+        const data = (await ValveInstance.find().populate({
+            path: 'valve_model',
+            populate: {
+                path: 'valve_family',
+                match: { _id: valveFamilyId }
+            }
+        })).filter(el => el.valve_model.valve_family !== null)
+
+        if (!data) {
+            return res.status(404).json({ error: 'Valve not found' })
+        }
+
+        res.status(200).json(data)
+    } catch (error) {
+        res.status(500).json({ error: 'Error retrieving tests.' })
+    }
+})
+
+
 router.get("/get/:valveInstanceSN", async (req, res) => {
     const valveId = req.params.valveInstanceSN
 
