@@ -9,7 +9,7 @@ const test_for_page = 16
 
 router.get("/all", async (req, res) => {
     try {
-        const data = await Test.find().populate('data')
+        const data = await Test.find()
         res.status(200).json(data)
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving tests.' })
@@ -25,7 +25,7 @@ router.get("/getpage/:pageNumber", async (req, res) => { //le pagine partono da 
     const to_skip = test_for_page * (pageNumber - 1)
 
     try {
-        const data = await Test.find().skip(to_skip).limit(test_for_page)/*.populate()*/
+        const data = await Test.find().skip(to_skip).limit(test_for_page)
         res.status(200).json(data)
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving tests.' })
