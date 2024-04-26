@@ -60,6 +60,9 @@ router.put('/edit/:valveFamilyID', async (req, res) => {
         return res.status(404).json({ error: 'Valve family not found' })
     }
 
+    if (!values)
+        values = {}
+
     for (const prop in theoric_values) { //aggiungo gli attributi che non sono stati modificati (verrebbero rimossi altrimenti)
         values[prop] = theoric_values[prop]
     }
