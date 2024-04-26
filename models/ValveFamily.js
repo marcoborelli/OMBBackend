@@ -13,7 +13,8 @@ const ValveValuesSchema = {
 const valveFamilySchema = new mongoose.Schema({
     _id: { type: String, required: true, trim: true }, //start of code
     img_url: { type: String },
-    theoric_values: { type: ValveValuesSchema, required: true }
+    theoric_values: { type: ValveValuesSchema, required: true },
+    average_values: { type: ValveValuesSchema }
 }, {
     versionKey: false
 });
