@@ -58,7 +58,12 @@ router.get("/get/:valveInstanceSN", async (req, res) => {
     //TODO: mettere un controllo regex che id sia valido
 
     try {
-        const data = await ValveInstance.findById(valveId).populate('valve_model').populate('tests')
+        const data = (await ValveInstance.findById(valveId).populate({
+            path: 'valve_model',
+            populate: {
+                path: 'valve_family',
+            }
+        }).populate('tests'))
 
         if (!data) {
             return res.status(404).json({ error: 'Valve instance not found' })
