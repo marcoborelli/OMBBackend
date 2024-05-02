@@ -5,7 +5,12 @@ const ValveInstance = require('../models/ValveInstance.js')
 
 router.get("/all", async (req, res) => {
     try {
-        const data = await ValveInstance.find().populate('valve_model').populate('tests')
+        const data = await ValveInstance.find().populate({
+            path: 'valve_model',
+            populate: {
+                path: 'valve_family',
+            }
+        }).populate('tests')
         res.status(200).json(data)
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving valve instances.' })
