@@ -4,13 +4,26 @@ const ValveInstance = require('../models/ValveInstance.js')
 
 
 router.get("/all", async (req, res) => {
+    const showTests = (req.query.showTests === undefined || req.query.showTests == 'true')
+    const showModel = (req.query.showModel === undefined || req.query.showModel == 'true')
+
     try {
-        const data = await ValveInstance.find().populate({
-            path: 'valve_model',
-            populate: {
-                path: 'valve_family',
-            }
-        }).populate('tests')
+        let query = ValveInstance.find()
+
+        if (showModel) {
+            query = query.populate({
+                path: 'valve_model',
+                populate: {
+                    path: 'valve_family',
+                }
+            })
+        }
+
+        if (showTests) {
+            query = query.populate('tests');
+        }
+
+        const data = await query.exec();
         res.status(200).json(data)
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving valve instances.' })
