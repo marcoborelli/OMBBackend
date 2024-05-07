@@ -4,8 +4,17 @@ const ValveModel = require('../models/ValveModel.js')
 
 
 router.get("/all", async (req, res) => {
+    const showFamily = (req.query.showFamily === undefined || req.query.showFamily == 'true')
+
     try {
-        const data = await ValveModel.find().populate('valve_family')
+        let query = ValveModel.find()
+
+        if (showFamily) {
+            query = query.populate('valve_family')
+        }
+
+        const data = await query.exec()
+
         res.status(200).json(data)
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving valve models.' })
