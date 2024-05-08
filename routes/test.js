@@ -4,8 +4,15 @@ const axios = require('axios');
 const router = express.Router()
 const Test = require('../models/Test.js')
 
-const test_for_page = 16
+const test_for_page = 10
 
+router.get("/info", async (req, res) => {
+    try {
+        res.status(200).json({ elements_number: (await Test.find()).length, elements_for_page: test_for_page})
+    } catch (error) {
+        res.status(500).json({ error: 'Error retrieving tests.' })
+    }
+})
 
 router.get("/all", async (req, res) => {
     try {
