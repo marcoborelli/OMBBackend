@@ -55,7 +55,7 @@ router.get("/get/:testID", async (req, res) => {
 
 router.post("/add", async (req, res) => {
     try {
-        const { instance_id, data } = req.body
+        const { timestamp, instance_id, data } = req.body
 
         try {
             await axios.get(`api/instances/get/${instance_id}`)
@@ -64,6 +64,7 @@ router.post("/add", async (req, res) => {
         }
 
         const newTest = new Test({
+            timestamp, //TODO: gestire nel caso in cui sia undefined
             instance_id,
             data,
         })
