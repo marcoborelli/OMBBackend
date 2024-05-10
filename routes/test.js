@@ -8,31 +8,23 @@ const test_for_page = 10
 
 router.get("/info", async (req, res) => {
     try {
-        res.status(200).json({ elements_number: (await Test.find()).length, elements_for_page: test_for_page})
+        res.status(200).json({ elements_number: (await Test.find()).length, elements_for_page: test_for_page })
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving tests.' })
     }
 })
 
 router.get("/all", async (req, res) => {
-    try {
-        const data = await Test.find()
-        res.status(200).json(data)
-    } catch (error) {
-        res.status(500).json({ error: 'Error retrieving tests.' })
-    }
-})
-
-router.get("/getpage/:pageNumber", async (req, res) => { //le pagine partono da 1
-    const pageNumber = parseInt(req.params.pageNumber)
-    if (isNaN(pageNumber)) {
-        return res.status(400).json({ error: 'Invalid input.' })
-    }
-
-    const to_skip = test_for_page * (pageNumber - 1)
+    let pageNumber = parseInt(req.query.page_number) //le pagine partono da 1
 
     try {
-        const data = await Test.find().skip(to_skip).limit(test_for_page)
+        let query = Test.find()
+
+        if (!isNaN(pageNumber)) {
+            query = query.skip(test_for_page * (pageNumber - 1)).limit(test_for_page)
+        }
+
+        const data = await query.exec();
         res.status(200).json(data)
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving tests.' })
