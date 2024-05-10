@@ -31,6 +31,24 @@ router.get("/all", async (req, res) => {
     }
 })
 
+router.get("/find", async (req, res) => {
+    let instance_id = req.query.instance_id ? req.query.instance_id : ''
+    const pageNumber = parseInt(req.query.page_number) //le pagine partono da 1
+
+    try {
+        let query = Test.find({ instance_id: { $regex: instance_id, $options: 'i' } }) //i = case insensitive
+
+        if (!isNaN(pageNumber)) {
+            query = query.skip(test_for_page * (pageNumber - 1)).limit(test_for_page)
+        }
+
+        const data = await query.exec();
+        res.status(200).json(data)
+    } catch (error) {
+        res.status(500).json({ error: 'Error retrieving tests.' })
+    }
+})
+
 router.get("/get/:testID", async (req, res) => {
     const testId = req.params.testID
 
