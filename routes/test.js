@@ -10,8 +10,7 @@ router.get("/all", async (req, res) => {
     let pageNumber = parseInt(req.query.page_number) //le pagine partono da 1
 
     try {
-        let query = Test.find()
-
+        let query = Test.find().sort({ timestamp: -1 })
         if (!isNaN(pageNumber)) {
             query = query.skip(test_for_page * (pageNumber - 1)).limit(test_for_page)
         }
@@ -28,7 +27,7 @@ router.get("/find", async (req, res) => {
     const pageNumber = parseInt(req.query.page_number) //le pagine partono da 1
 
     try {
-        let data = await Test.find({ instance_id: { $regex: instance_id, $options: 'i' } }) //i = case insensitive
+        let data = await Test.find({ instance_id: { $regex: instance_id, $options: 'i' } }).sort({ timestamp: -1 }) //i = case insensitive
         const totalNumber = data.length
 
         if (!isNaN(pageNumber)) {

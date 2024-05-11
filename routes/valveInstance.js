@@ -81,7 +81,10 @@ router.get("/get/:valveInstanceSN", async (req, res) => {
             populate: {
                 path: 'valve_family',
             }
-        }).populate('tests'))
+        }).populate({
+            path: 'tests',
+            options: { sort: { timestamp: -1 } }
+        }))
 
         if (!data) {
             return res.status(404).json({ error: 'Valve instance not found' })
