@@ -36,14 +36,15 @@ router.get("/find", async (req, res) => {
     const pageNumber = parseInt(req.query.page_number) //le pagine partono da 1
 
     try {
-        let query = Test.find({ instance_id: { $regex: instance_id, $options: 'i' } }) //i = case insensitive
+        let data = await Test.find({ instance_id: { $regex: instance_id, $options: 'i' } }) //i = case insensitive
+        const totalNumber = data.length
 
         if (!isNaN(pageNumber)) {
-            query = query.skip(test_for_page * (pageNumber - 1)).limit(test_for_page)
+            let base = test_for_page * (pageNumber - 1)
+            data = data.slice(base, (base + test_for_page <= data.length) ? base + test_for_page : base + (data.length - base))
         }
 
-        const data = await query.exec();
-        res.status(200).json(data)
+        res.status(200).json({ elements_number: totalNumber, elements_for_page: test_for_page, query_data: data })
     } catch (error) {
         res.status(500).json({ error: 'Error retrieving tests.' })
     }
