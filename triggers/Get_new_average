@@ -1,0 +1,187 @@
+//Watch Against: Collection
+//Collection Name: tests
+//Operation Type: insert document
+
+exports = async function (changeEvent) {
+  try {
+    /*se vuoi altri angoli da misurare mettili qui
+    ricorda che però poi dovrai anche dargli un nome. Per farlo modifica si l'oggetto qui sotto che la funzione convertToCorrectName() :)*/
+    const toMeasure = [
+      { angle: 0, isOpening: true },
+      { angle: 45, isOpening: true },
+      { angle: 90, isOpening: true },
+      { angle: 90, isOpening: false },
+      { angle: 45, isOpening: false },
+      { angle: 0, isOpening: false }
+    ]
+
+    const baseObj = { bto: 0, runo: 1, eto: 2, btc: 3, runc: 4, etc: 5 }
+
+
+    //importo le tabelle
+    const db = context.services.get("Cluster0").db("test")
+    const coll_tests = db.collection("tests")
+    const coll_instances = db.collection("valveinstances")
+    const coll_valves = db.collection("valvemodels")
+    const coll_families = db.collection("valvefamilies")
+
+
+    console.log("DEBUG: Change event:")
+    console.log(changeEvent) 
+    if (changeEvent.fullDocument === undefined) {
+      console.log(`DEBUG: Non sono riuscito ad accedere al documento`)
+      return
+    }
+    const { instance_id } = changeEvent.fullDocument //TODO: se il documento viene eliminato questo e' undefined
+
+    console.log(`DEBUG: Istanza su cui è stato fatto il test: ${instance_id}`)
+
+
+    //aggiorno la media della singola istanza su cui e' stato fatto il test
+    const arr_of_tests = await getAllTestsOfTheInstance(instance_id, coll_tests)
+    for (let i = 0; i < arr_of_tests.length; i++) {
+      console.log(arr_of_tests[i]._id)
+    }
+    const tmp = getAverageOfTests(arr_of_tests, toMeasure)
+    const average_of_instance_tests = convertToCorrectName(tmp)
+
+    console.log(`DEBUG: Media di tutti i test che appartengono all'istanza ${instance_id}`)
+    for (const key in average_of_instance_tests) {
+      console.log(`${key}: ${average_of_instance_tests[key]}`)
+    }
+    console.log(`DEBUG: Fine media di tutti i test dell'istanza`)
+
+    await coll_instances.findOneAndUpdate({ _id: instance_id }, { $set: { average_values: average_of_instance_tests } })
+
+
+
+    //ora aggiorno anche la media del modello di valvola
+    const valveModel_id = await getValveModelId(instance_id, coll_instances)
+    console.log(`DEBUG: Modello di valvola su cui è stato fatto il test: ${valveModel_id}`)
+
+    const arr_of_instances_of_a_model = await getAllInstancesOfAValve(valveModel_id, coll_instances)
+
+    const general_average_of_model = getAverageOfInstancesOrModels(arr_of_instances_of_a_model, baseObj)
+
+    console.log(`DEBUG: Media di tutte le istanze che appartengono al modello ${valveModel_id}`)
+    for (const key in general_average_of_model) {
+      console.log(`${key}: ${general_average_of_model[key]}`)
+    }
+    console.log(`DEBUG: Fine media di tutte le istanze del modello`)
+
+    await coll_valves.findOneAndUpdate({ _id: valveModel_id }, { $set: { average_values: general_average_of_model } })
+
+
+
+    //ora aggiorno la media della famiglia
+    const family_id = await getFamilyId(valveModel_id, coll_valves)
+    const arr_of_models_of_family = await getAllValvesOfAFamily(family_id, coll_valves)
+
+    const general_average_of_family = getAverageOfInstancesOrModels(arr_of_models_of_family, baseObj)
+
+    console.log(`DEBUG: Media di tutti i modelli che appartengono alla famiglia ${family_id}`)
+    for (const key in general_average_of_family) {
+      console.log(`${key}: ${general_average_of_family[key]}`)
+    }
+    console.log(`DEBUG: Fine media di tutti i modelli della famiglia`)
+
+    await coll_families.findOneAndUpdate({ _id: family_id }, { $set: { average_values: general_average_of_family } })
+
+  } catch (err) {
+    console.log("Errore: ", err.message)
+  }
+}
+
+
+
+function getAverageOfInstancesOrModels(arr_of_instances_or_models, baseObj) {
+  let res = {}
+
+  if (arr_of_instances_or_models.length < 0)
+    return res
+
+  for (const key in baseObj) {
+    res[key] = getAverageOfASpecificFieldOfAnObjectsArray(arr_of_instances_or_models, key)
+  }
+
+  return res
+}
+
+function getAverageOfASpecificFieldOfAnObjectsArray(array, key) {
+  let sum = 0
+  let counter = 0
+
+  array.forEach(element => {
+    if (element.average_values && element.average_values[key]) {
+      sum += element.average_values[key]
+      counter++
+    }
+  })
+
+  return (counter == 0) ? null : sum / counter
+}
+
+function getAverageOfTests(tests, elements_to_average) {
+  let res = []
+
+  for (let i = 0; i < elements_to_average.length; i++) {
+    let pairs_of_angles = tests.map(test => {
+      let single_pair = test.data.filter(x => (x.isOpening == elements_to_average[i].isOpening) && (x.angle == elements_to_average[i].angle))[0]?.pair
+      return single_pair //non mi convice che ritorno lo 0, secondo me devo tipo vare valore speciale e successivamente togliere questi valori speciali
+    })
+
+    pairs_of_angles = pairs_of_angles.filter(element => element !== undefined && element !== null)
+
+    let avg_num
+
+    if (pairs_of_angles.length != 0) {
+      avg_num = pairs_of_angles.reduce((accum, cur_value) => accum + cur_value) / pairs_of_angles.length
+    } else {
+      avg_num = null
+    }
+
+    res.push({ angle: elements_to_average[i].angle, isOpening: elements_to_average[i].isOpening, average: avg_num })
+  }
+
+  return res
+}
+
+function convertToCorrectName(input_data) {
+  let res = {}
+
+  for (let i = 0; i < input_data.length; i++) {
+    switch (input_data[i].angle) {
+      case 0:
+        res[input_data[i].isOpening ? 'bto' : 'etc'] = input_data[i].average
+        break
+      case 45:
+        res[input_data[i].isOpening ? 'runo' : 'runc'] = input_data[i].average
+        break
+      case 90:
+        res[input_data[i].isOpening ? 'eto' : 'btc'] = input_data[i].average
+        break
+    }
+  }
+
+  return res
+}
+
+async function getAllTestsOfTheInstance(instance_id, coll_tests) {
+  return await coll_tests.find({ instance_id: instance_id }).toArray()
+}
+
+async function getValveModelId(instance_id, coll_instances) {
+  return (await coll_instances.findOne({ _id: instance_id })).valve_model
+}
+
+async function getFamilyId(model_id, coll_valves) {
+  return (await coll_valves.findOne({ _id: model_id })).valve_family
+}
+
+async function getAllInstancesOfAValve(valve_id, coll_instances) {
+  return await coll_instances.find({ valve_model: valve_id }).toArray()
+}
+
+async function getAllValvesOfAFamily(family_id, coll_valves) {
+  return await coll_valves.find({ valve_family: family_id }).toArray()
+}
